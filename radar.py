@@ -27,9 +27,7 @@ def find_keywords(text, keywords):
     return found
 
 text = get_page_text(URL)
-found = find_keywords(text, KEYWORDS)
 
-phrase_present = "keine stellen ausgeschrieben" in text
 
 if SNAPSHOT.exists():
     old = SNAPSHOT.read_text(encoding="utf-8")
@@ -39,15 +37,17 @@ if old is None:
     print("First run, snapshot saved")
 elif old == text:
     print("Page unchanged")
-else: print("Page changed, check it")
-
-if found and phrase_present:
-    print("No vacancies found, but here what we found that could be useful")
-elif found and not phrase_present:
-    position = text.find(found[0])
-    snippet = text[max(0, position - 60) : position + 60]
-    print("Vacancy found:", snippet)
-elif not found and phrase_present:
-    print("Nothing changed")
-else:
-    print("Something might be new, go check it out!")
+else: 
+    phrase_present = "keine stellen ausgeschrieben" in text
+    found = find_keywords(text, KEYWORDS)
+    print("Page changed, check it")
+    if found and phrase_present:
+        print("No vacancies found, but here what we found that could be useful")
+    elif found and not phrase_present:
+        position = text.find(found[0])
+        snippet = text[max(0, position - 60) : position + 60]
+        print("Vacancy found:", snippet)
+    elif not found and phrase_present:
+        print("Nothing changed")
+    else:   
+        print("Something might be new, go check it out!")
