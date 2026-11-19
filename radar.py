@@ -1,5 +1,8 @@
 import requests
+from pathlib import Path
 from bs4 import BeautifulSoup
+SNAPSHOP = Path("snapshots/trinitec.txt")
+SNAPSHOP.parent.mkdir(exist_ok=True)
 URL = "https://trinitec.at/jobcorner"
 KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior"]
 response = requests.get(URL, timeout=15)
@@ -8,6 +11,15 @@ print("Page length:", len(response.text))
 soup = BeautifulSoup(response.text, "html.parser")
 text = soup.get_text(" ", strip=True).lower()
 phrase_present = "keine stellen ausgeschrieben" in text
+if SNAPSHOP.exists():
+    old = SNAPSHOP.read_text(encoding="utf-8")
+else: old = None
+SNAPSHOP.write_text(text, encoding="utf-8")
+if old is None:
+    print("First run, snapshot saved")
+elif old == text:
+    print("Page unchanged")
+else: print("Page changed, check it")
 found = []
 for word in KEYWORDS:
     if word in text:
