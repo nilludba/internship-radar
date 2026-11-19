@@ -4,5 +4,11 @@
         "name": "trinitec",
         "url": "https://trinitec.at/jobcorner",
         "phrase": "keine stellen ausgeschrieben"
+    },
+    {
+       "id": "smarter-software",
+        "name": "S2 Smarter Software",
+        "url": "https://smarter-software.com/de/karriere",
+        "phrase": ""
     }
 ]
