@@ -27,6 +27,9 @@ def find_keywords(text, keywords):
             print("Context:", snippet)
     return found
 
+def get_added_words(old, new):
+    old_words = set(old.split())
+    return [w for w in new.split() if w not in old_words]
 
 def check_company(company):
     name = company["name"]
@@ -49,6 +52,8 @@ def check_company(company):
         print("Page unchanged")
     else:
         print("Page changed, check it")
+        added = get_added_words(old, text)
+        print("New words:",  " ".join(added[:30]))
         phrase_present = bool(phrase) and phrase in text
         found = find_keywords(text, KEYWORDS)
         if found and phrase_present:
