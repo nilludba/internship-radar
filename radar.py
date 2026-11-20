@@ -31,6 +31,14 @@ def get_added_words(old, new):
     old_words = set(old.split())
     return [w for w in new.split() if w not in old_words]
 
+def cut_text(text, start, end):
+    ###Keep only text from start and end
+    if start and start in text:
+        text = text.split(start, 1)[1] #[1] takes only the second part
+    if end and end in text:
+        text = text.split(end, 1)[0] #[0] takes only the first part
+    return text
+
 def check_company(company):
     name = company["name"]
     url = company["url"]
@@ -39,6 +47,7 @@ def check_company(company):
     print("Checking:", name)
 
     text = get_page_text(url)
+    text = cut_text(text, company.get("start",""), company.get("end", ""))
 
     if snapshot.exists():
         old = snapshot.read_text(encoding="utf-8")
@@ -73,6 +82,10 @@ with open("companies.json", encoding="utf-8") as f:
     companies = json.load(f)
 
 for company in companies:
+    if not company.get("enabled", True):
+        print("Skipped:", company["name"])
+        print()
+        continue
     try:
         check_company(company)
     except requests.RequestException as error:
