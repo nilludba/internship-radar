@@ -21,10 +21,6 @@ def find_keywords(text, keywords):
     for word in keywords:
         if word in text:
             found.append(word)
-            print("Found word:", word)
-            position = text.find(word)
-            snippet = text[max(0, position - 60): position + 60]
-            print("Context:", snippet)
     return found
 
 def get_added_words(old, new):
@@ -40,11 +36,12 @@ def cut_text(text, start, end):
     return text
 
 def check_company(company):
+    lines = []
     name = company["name"]
     url = company["url"]
     phrase = company["phrase"]
     snapshot = Path("snapshots") / f"{company['id']}.txt"
-    print("Checking:", name)
+    lines.append(f"{name}:")
 
     text = get_page_text(url)
     text = cut_text(text, company.get("start",""), company.get("end", ""))
@@ -56,39 +53,44 @@ def check_company(company):
     snapshot.write_text(text, encoding="utf-8")
 
     if old is None:
-        print("First run, snapshot saved")
+        lines.append("  First run, snapshot saved")
     elif old == text:
-        print("Page unchanged")
+        lines.append("  Page unchanged")
     else:
-        print("Page changed, check it")
+        lines.append("  Page changed, check it")
         added = get_added_words(old, text)
         added_text = " ".join(added)
-        print("New words:",  " ".join(added[:30]))
+        lines.append("  New words: " + " ".join(added[:30]))
         phrase_present = bool(phrase) and phrase in text
         found = find_keywords(added_text, KEYWORDS)
         if found and phrase_present:
-            print("No vacancies found, but here what we found that could be useful")
+            lines.append("  No vacancies found, but here what we found that could be useful")
         elif found and not phrase_present:
             position = added_text.find(found[0])
             snippet = added_text[max(0, position - 60): position + 60]
-            print("Vacancy found:", snippet)
+            lines.append("  Vacancy found: " + snippet)
         elif not found and phrase_present:
-            print("Nothing changed")
+            lines.append("  Nothing changed")
         else:
-            print("Something might be new, go check it out!")
+            lines.append("  Something might be new, go check it out!")
+    return lines
 
+def run_all():
+    ###Check all enabled comapnies and return a text report
+    with open("companies.json", encoding="utf-8") as f:
+        companies = json.load(f)
 
-with open("companies.json", encoding="utf-8") as f:
-    companies = json.load(f)
+    report = []
+    for company in companies:
+        if not company.get("enabled", True):
+            continue
+        try:
+            report.extend(check_company(company))
+        except requests.RequestException as error:
+            report.append(f"Could not check {company["name"]} - {error}")
+        report.append("")
+        time.sleep(2)
+    return "\n".join(report)
 
-for company in companies:
-    if not company.get("enabled", True):
-        print("Skipped:", company["name"])
-        print()
-        continue
-    try:
-        check_company(company)
-    except requests.RequestException as error:
-        print("Could not check", company["name"], "-", error)
-    print()
-    time.sleep(2)
+if __name__ == "__main__":
+    print(run_all())
