@@ -5,7 +5,7 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior"]
+KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior", "studierende", "werkstudierende", "praktikant", "trainee"]
 Path("snapshots").mkdir(exist_ok=True)
 
 
@@ -53,14 +53,15 @@ def check_company(company):
     else:
         print("Page changed, check it")
         added = get_added_words(old, text)
+        added_text = " ".join(added)
         print("New words:",  " ".join(added[:30]))
         phrase_present = bool(phrase) and phrase in text
-        found = find_keywords(text, KEYWORDS)
+        found = find_keywords(added_text, KEYWORDS)
         if found and phrase_present:
             print("No vacancies found, but here what we found that could be useful")
         elif found and not phrase_present:
-            position = text.find(found[0])
-            snippet = text[max(0, position - 60): position + 60]
+            position = added_text.find(found[0])
+            snippet = added_text[max(0, position - 60): position + 60]
             print("Vacancy found:", snippet)
         elif not found and phrase_present:
             print("Nothing changed")
