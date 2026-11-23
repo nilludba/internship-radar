@@ -5,6 +5,8 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
+from urllib.parse import urljoin
+
 KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior", "studierende", "werkstudierende", "praktikant", "trainee"]
 Path("snapshots").mkdir(exist_ok=True)
 
@@ -15,6 +17,24 @@ def get_page_text(url):
     text = soup.get_text(" ", strip=True).lower()
     return text
 
+def get_vacancies(company):
+    response = requests.get(company["url"], timeout=15)
+    soup = BeautifulSoup(response.text, "html.parser")
+    pattern = company["job_link_contains"]
+    vacancies = []
+    seen_links = set()
+    for a in soup.find_all("a", href=True):
+        link = urljoin(company["url"], a["href"])
+        if pattern not in link or link in seen_links:
+            continue
+        seen_links.add(link)
+        if company.get("title_from_link"):
+            slug = link.rstrip("/").split("/")[-1]
+            title = slug.replace("-", " ").title()
+        else:
+            title = a.get_text(" ", strip=True)
+        vacancies.append((title, link))
+    return vacancies
 
 def find_keywords(text, keywords):
     found = []

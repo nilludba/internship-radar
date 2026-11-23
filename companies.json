@@ -9,14 +9,17 @@
        "id": "smarter-software",
         "name": "S2 Smarter Software",
         "url": "https://smarter-software.com/de/karriere",
-        "phrase": ""
+        "phrase": "",
+        "job_link_contains": "/de/job/",
+        "title_from_link": true
     },
     {
         "id": "imendo",
         "name": "imendo",
         "url": "https://www.imendo.com/de/jobs",
         "phrase": "",
-        "enabled": false
+        "enabled": false,
+        "job_link_contains": "/de/job/"
     },
     {
         "id": "alturos",
@@ -24,6 +27,7 @@
         "url": "https://www.alturos.com/jobs/",
         "phrase": "",
         "start": "offene positionen",
-        "end": "du möchtest dich bewerben"
+        "end": "du möchtest dich bewerben",
+        "job_link_contains": "/news/job/"
     }
 ]
