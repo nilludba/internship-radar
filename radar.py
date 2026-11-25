@@ -7,15 +7,15 @@ from bs4 import BeautifulSoup
 
 from urllib.parse import urljoin
 
-from db import init_db, add_vacancy
+from db import init_db, add_vacancy, remove_closed
 
 KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior", "studierende", "werkstudierende", "praktikant", "trainee"]
 Path("snapshots").mkdir(exist_ok=True)
 
-def save_new_vacancies(company):
+def save_new_vacancies(company, vacancies):
     """Check if a vacancy is new"""
     new = []
-    for title, link in get_vacancies(company):
+    for title, link in vacancies:
         result = add_vacancy(company["name"], title, link)
         if result:
             new.append((title, link))
@@ -88,8 +88,13 @@ def check_company(company):
     text = cut_text(text, company.get("start",""), company.get("end", ""))
 
     if "job_link_contains" in company:
-        #Check for new vacancies, return them if exists
-        new = save_new_vacancies(company)
+        #Check for new vacancies and delete closed, return them if exists
+        vacancies = get_vacancies(company)
+        current_links = [link for title, link in vacancies]
+        closed = remove_closed(company["name"], current_links)
+        for link in closed:
+            lines.append(f"  Closed: {link}")
+        new = save_new_vacancies(company, vacancies)
         if not new:
             lines.append("  No new vacancies")
         else:

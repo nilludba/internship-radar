@@ -3,6 +3,23 @@ from datetime import datetime
 
 DB_FILE = "radar.db"
 
+def remove_closed(company, current_links):
+    """Delete vacancies of company that are no longer on the page. Return deleted links.
+    If current_links is empty (site broken), delete nothing."""
+    if not current_links:
+        return []
+    conn = get_connection()
+    rows = conn.execute("SELECT link FROM vacancies WHERE company = ?", (company,)).fetchall()
+    deleted_links = []
+    for row in rows:
+        link = row[0]
+        if link not in current_links:
+            conn.execute("DELETE FROM vacancies WHERE link = ?", (link,))
+            deleted_links.append(link)
+    conn.commit()
+    conn.close()
+    return deleted_links
+
 def get_connection():
     return sqlite3.connect(DB_FILE)
 
