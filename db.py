@@ -7,6 +7,7 @@ def get_connection():
     return sqlite3.connect(DB_FILE)
 
 def init_db():
+    """Creates vacancies table"""
     conn = get_connection()
     conn.execute("""
     CREATE TABLE IF NOT EXISTS vacancies (
