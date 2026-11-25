@@ -7,9 +7,19 @@ from bs4 import BeautifulSoup
 
 from urllib.parse import urljoin
 
+from db import init_db, add_vacancy
+
 KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior", "studierende", "werkstudierende", "praktikant", "trainee"]
 Path("snapshots").mkdir(exist_ok=True)
 
+def save_new_vacancies(company):
+    """Check if a vacancy is new"""
+    new = []
+    for title, link in get_vacancies(company):
+        result = add_vacancy(company["name"], title, link)
+        if result:
+            new.append((title, link))
+    return new
 
 def get_page_text(url):
     """Takes the url of the page
@@ -73,10 +83,20 @@ def check_company(company):
     phrase = company["phrase"]
     snapshot = Path("snapshots") / f"{company['id']}.txt"
     lines.append(f"{name}:")
-
+    
     text = get_page_text(url)
     text = cut_text(text, company.get("start",""), company.get("end", ""))
 
+    if "job_link_contains" in company:
+        #Check for new vacancies, return them if exists
+        new = save_new_vacancies(company)
+        if not new:
+            lines.append("  No new vacancies")
+        else:
+            for title, link in new:
+                lines.append(f"  New: {title} - {link}")
+        return lines
+    
     if snapshot.exists():
         old = snapshot.read_text(encoding="utf-8")
     else:
@@ -108,6 +128,8 @@ def check_company(company):
 
 def run_all():
     ###Check all enabled comapnies and return a text report
+    init_db()
+    
     with open("companies.json", encoding="utf-8") as f:
         companies = json.load(f)
 
