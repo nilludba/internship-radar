@@ -12,12 +12,20 @@ Path("snapshots").mkdir(exist_ok=True)
 
 
 def get_page_text(url):
+    """Takes the url of the page
+    request.get downloads html
+    BeautifulSoup divide it on tags
+    get_text gets rid of tags and leaves visible text and makes it lower cases
+    """
     response = requests.get(url, timeout=15)
     soup = BeautifulSoup(response.text, "html.parser")
     text = soup.get_text(" ", strip=True).lower()
     return text
 
 def get_vacancies(company):
+    """Recieves companies from companies.json
+    sorters by job_link_contains and seen_links
+    """
     response = requests.get(company["url"], timeout=15)
     soup = BeautifulSoup(response.text, "html.parser")
     pattern = company["job_link_contains"]
@@ -37,6 +45,7 @@ def get_vacancies(company):
     return vacancies
 
 def find_keywords(text, keywords):
+    """Recieves text and keywords and checks if it exists in the text"""
     found = []
     for word in keywords:
         if word in text:
@@ -44,6 +53,7 @@ def find_keywords(text, keywords):
     return found
 
 def get_added_words(old, new):
+    """Makes from old text a set and return new words"""
     old_words = set(old.split())
     return [w for w in new.split() if w not in old_words]
 
@@ -56,6 +66,7 @@ def cut_text(text, start, end):
     return text
 
 def check_company(company):
+    """Checks the text for new words"""
     lines = []
     name = company["name"]
     url = company["url"]
