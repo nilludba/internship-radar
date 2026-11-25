@@ -13,7 +13,7 @@ KEYWORDS = ["praktikum", "internship", "werkstudent", "student", "junior", "stud
 Path("snapshots").mkdir(exist_ok=True)
 
 def save_new_vacancies(company, vacancies):
-    """Check if a vacancy is new"""
+    """Save and return new vacancies"""
     new = []
     for title, link in vacancies:
         result = add_vacancy(company["name"], title, link)
@@ -68,7 +68,7 @@ def get_added_words(old, new):
     return [w for w in new.split() if w not in old_words]
 
 def cut_text(text, start, end):
-    ###Keep only text from start and end
+    """Keep only text from start and end"""
     if start and start in text:
         text = text.split(start, 1)[1] #[1] takes only the second part
     if end and end in text:
@@ -83,9 +83,6 @@ def check_company(company):
     phrase = company["phrase"]
     snapshot = Path("snapshots") / f"{company['id']}.txt"
     lines.append(f"{name}:")
-    
-    text = get_page_text(url)
-    text = cut_text(text, company.get("start",""), company.get("end", ""))
 
     if "job_link_contains" in company:
         #Check for new vacancies and delete closed, return them if exists
@@ -101,6 +98,9 @@ def check_company(company):
             for title, link in new:
                 lines.append(f"  New: {title} - {link}")
         return lines
+
+    text = get_page_text(url)
+    text = cut_text(text, company.get("start",""), company.get("end", ""))
     
     if snapshot.exists():
         old = snapshot.read_text(encoding="utf-8")
@@ -132,7 +132,7 @@ def check_company(company):
     return lines
 
 def run_all():
-    ###Check all enabled comapnies and return a text report
+    """Check all enabled comapnies and return a text report"""
     init_db()
     
     with open("companies.json", encoding="utf-8") as f:
